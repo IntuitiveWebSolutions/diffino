@@ -135,7 +135,7 @@ diffino file_1.csv file_2.csv --output s3://bucket/diff.xlsx
 #### Output to a JSON file in S3
 
 ```
-diffino --output s3://bucket/diff.json
+diffino file_1.csv file_2.csv --output s3://bucket/diff.json
 ```
 
 ## Python module
