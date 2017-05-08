@@ -11,12 +11,12 @@ XLSXDataset < Dataset
 - sheet_name
 - skip_cols
 
-Differ
-- inputs
-- outputs
+Diffino
+- left
+- right
+- output
 - convert_numeric
 - mode
 - cols
-- _guess_inputs()
-- _guess_output()
-- _validate_inputs_outputs_match()
+- _build_inputs()
+- build_diff()
