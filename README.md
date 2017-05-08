@@ -163,7 +163,7 @@ For using all columns:
 ```python
 from diffino.models import Diffino
 
-diffino = Diffino(left_input='', right_input='', mode='pandas')
+diffino = Diffino(left_input='s3://bucket/one.csv', right_input='s3://bucket/two.csv', mode='pandas')
 results = diffino.build_diff()
 ```
 
