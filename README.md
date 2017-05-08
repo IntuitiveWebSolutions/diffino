@@ -1,4 +1,4 @@
-Diffino
+![](https://raw.githubusercontent.com/ivansabik/diffino/master/doc/diffino_icon.png) Diffino
 ====
 [![Run Status](https://api.shippable.com/projects/590fc79a8874ee070046b384/badge?branch=master)](https://app.shippable.com/github/ivansabik/diffino)
 [![Coverage Badge](https://api.shippable.com/projects/590fc79a8874ee070046b384/coverageBadge?branch=master)](https://app.shippable.com/github/ivansabik/diffino)
@@ -190,3 +190,7 @@ Coming soon
 ## API
 
 Coming soon
+
+## License
+
+**MIT** check external dependencies for their respective licenses. <a href="https://icons8.com">Icon pack by Icons8</a>
