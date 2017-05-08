@@ -1,0 +1,14 @@
+language: python
+python:
+  - 2.7
+  # - 3.2 not supported by pytest
+  - 3.3
+  - 3.4
+  - 3.5
+  - 3.6
+install:
+  - pip install -r requirements-dev.txt && pip install -e .
+before_script:
+  - mkdir -p shippable/codecoverage
+script:
+  - py.test --cov-report xml:shippable/codecoverage/coverage.xml --cov-report term-missing --cov=diffino tests
