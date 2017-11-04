@@ -8,5 +8,6 @@ setup(
     name='diffino',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=required
+    install_requires=required,
+    entry_points={'console_scripts': ['diffino = diffino.cli:main']}
 )
