@@ -1,13 +1,13 @@
 ## Models
 
-Dataset
-- local_filename
-- s3_location
+DataSet
+- location
+- read()
 
-CSVDataset < Dataset
+CsvDataSet < Dataset
 - separator
 
-XLSXDataset < Dataset
+ExcelDataSet < Dataset
 - sheet_name
 - skip_cols
 

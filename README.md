@@ -1,11 +1,11 @@
-![](https://raw.githubusercontent.com/ivansabik/diffino/master/doc/diffino_icon.png) Diffino
+diffino
 ====
 [![Run Status](https://api.shippable.com/projects/590fc79a8874ee070046b384/badge?branch=master)](https://app.shippable.com/github/ivansabik/diffino)
 [![Coverage Badge](https://api.shippable.com/projects/590fc79a8874ee070046b384/coverageBadge?branch=master)](https://app.shippable.com/github/ivansabik/diffino)
 
 Diffing tools for comparing datasets in CSV, XLSX and other formats available as CLI app, API, web app and module. Powered by the awesome Pandas library for Python.
 
-- Compare one or more CSV datasets using MD5, you can output differences to terminal or as CSV, XLSX or JSON
+- Compare one or more CSV datasets using MD5 hash of the files
 - Compare one or more CSV and XLSX datasets using Pandas where you can output differences row by row
 - Use the following inputs for your datasets:
   - Local file in CSV (for both MD5 and pandas modes)
@@ -81,7 +81,7 @@ MD5 is only useful for knowing two CSV datasets are not the same but it's not us
 The same commands shown earlier for MD5 are available, you need to pass the `--mode pandas` argument for using pandas. **By default Pandas mode is used so this argument can be omitted**:
 
 ```
-diffino before_dataset.csv after_dataset.csv  --mode pandas
+diffino before_dataset.csv after_dataset.csv --mode pandas
 ```
 
 When using pandas mode, by default Diffino will try to convert numeric columns, you can change this behavior with:
@@ -93,7 +93,7 @@ diffino before_dataset.csv after_dataset.csv --convert-numeric false
 You can define the columns to be used for checking the diffs:
 
 ```
-diffino before_dataset.csv after_dataset.csv --cols="['id', 'name']"
+diffino before_dataset.csv after_dataset.csv --cols="id, name"
 ```
 
 ### Output diff results to file
@@ -147,11 +147,11 @@ Useful if you want to integrate as part of you ETL or as part of you Continuous 
 ```python
 from diffino.models import Diffino
 
-diffino = Diffino(left_input='one.csv', right_input='two.csv', mode='md5')
+diffino = Diffino(left='one.csv', right='two.csv', mode='md5')
 results = diffino.build_diff()
 ```
 
-In the above example, the `results` variable contains a dictionary with differences:
+In the above example, the `results` variable contains a dictionary with md5 hashes:
 
 ```python
 results['left_only']
@@ -165,8 +165,16 @@ For using all columns:
 ```python
 from diffino.models import Diffino
 
-diffino = Diffino(left_input='s3://bucket/one.csv', right_input='s3://bucket/two.csv', mode='pandas')
+diffino = Diffino(left='s3://bucket/one.csv', right='s3://bucket/two.csv', mode='pandas')
 results = diffino.build_diff()
+```
+
+In the above example, the `results` variable contains a dictionary with differences:
+
+```python
+results['left_only']
+results['right_only']
+results['both']
 ```
 
 And for using a subset of columns you can specify a string with a Python list of the column names you want to include:
@@ -175,8 +183,8 @@ And for using a subset of columns you can specify a string with a Python list of
 from diffino.models import Diffino
 
 diffino = Diffino(
-  left_input='one.xlsx',
-  right_input='two.xlsx',
+  left='one.xlsx',
+  right='two.xlsx',
   mode='pandas',
   cols=['id', 'name']
 )
@@ -190,7 +198,3 @@ Coming soon
 ## API
 
 Coming soon
-
-## License
-
-**MIT** check external dependencies for their respective licenses. <a href="https://icons8.com">Icon pack by Icons8</a>
