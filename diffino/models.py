@@ -61,6 +61,8 @@ class Diffino:
         self.convert_numeric = kwargs.get('convert_numeric', True)
         self.mode = kwargs.get('mode', 'pandas')
         self.cols = kwargs.get('cols')
+        self.cols_left = kwargs.get('cols_left')
+        self.cols_right = kwargs.get('cols_right')
 
         self.diff_results = {}
 
