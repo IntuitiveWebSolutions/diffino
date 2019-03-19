@@ -191,6 +191,21 @@ diffino = Diffino(
 results = diffino.build_diff()
 ```
 
+Different column names? No problemo that works too!
+
+```python
+from diffino.models import Diffino
+
+diffino = Diffino(
+  left='one.xlsx',
+  right='two.xlsx',
+  mode='pandas',
+  left_cols=['myColumn'],
+  right_cols=['my_column'],
+)
+results = diffino.build_diff()
+```
+
 ## Web App
 
 Coming soon
