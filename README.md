@@ -93,7 +93,7 @@ diffino before_dataset.csv after_dataset.csv --convert-numeric false
 You can define the columns to be used for checking the diffs:
 
 ```
-diffino before_dataset.csv after_dataset.csv --cols="id, name"
+diffino before_dataset.csv after_dataset.csv --cols id name
 ```
 
 ### Output diff results to file
