@@ -91,8 +91,8 @@ class Diffino:
 
     def to_csv(self, s3=False):
         output_name = self.output.replace('.csv', '')
-        output_left = output_name + '_left.csv'
-        output_right = output_name + '_right.csv'
+        output_left = output_name + '_not_in_left.csv'
+        output_right = output_name + '_not_in_right.csv'
 
         logging.info('Saving result left csv file %s', output_left)
         self.diff_result_left.to_csv(output_left)
@@ -151,12 +151,15 @@ class Diffino:
 
         logging.info('Performing merge of datasets in preparation for diff')
         merged_dataset = pd.merge(left=self._left_dataset, right=self._right_dataset, how='outer',
-                     left_index=True, right_index=True, suffixes=['_left', '_right'])
+                     left_index=True, right_index=True, suffixes=['_left', '_right'], indicator='exists')
+
+        exists_left =  merged_dataset['exists'] == 'left_only'
+        exists_right = merged_dataset['exists'] == 'right_only'
 
         logging.info('Creating diff result left')
-        self.diff_result_left = merged_dataset.drop(self._left_dataset.index)
+        self.diff_result_left = merged_dataset[exists_right].drop(columns='exists')
 
         logging.info('Creating diff result right')
-        self.diff_result_right = merged_dataset.drop(self._right_dataset.index)
+        self.diff_result_right = merged_dataset[exists_left].drop(columns='exists')
 
         self._build_output()
