@@ -1,23 +1,26 @@
+import logging
 import pandas as pd
+
+logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
 
 class DataSet:
     dfs = []
     md5_hashes = []
 
-    def __init__(self, location, index_col, cols):
+    def __init__(self, location, index_col, cols, convert_numeric):
         self.location = location
         self.index_col = index_col
         self.cols = cols
+        self.convert_numeric = convert_numeric
 
     # Private methods
     def _get_from_local_file(self):
-        if len(self.cols):
-            return pd.read_csv(self.location, index_col=self.index_col, usecols=self.cols)
-        return pd.read_csv(self.location, index_col=self.index_col)
+        logging.info('Reading local file %s', self.location)
+        return pd.read_csv(self.location, index_col=self.index_col, usecols=self.cols)
 
     def _get_from_local_dir(self):
-        self._get_from_local_file()
+        return self._get_from_local_file()
 
     def _get_from_s3_file(self):
         raise NotImplementedError
@@ -31,16 +34,22 @@ class DataSet:
 
     # Public methods
     def read(self):
+        df = None
         if 's3://' in self.location:
             if '/' in self.location:
-                return self._get_from_s3_bucket()
+                df = self._get_from_s3_bucket()
             else:
-                return self. _get_from_s3_file()
+                df = self. _get_from_s3_file()
         else:
             if '/' in self.location:
-                return self._get_from_local_dir()
+                df = self._get_from_local_dir()
             else:
-                return self._get_from_local_file()
+                df = self._get_from_local_file()
+        
+        if self.convert_numeric:
+            logging.info('Converting to numeric for file %s', self.location)
+            df.apply(pd.to_numeric, errors='ignore')
+        return df
 
 class Diffino:
     '''
@@ -72,18 +81,23 @@ class Diffino:
 
     # Private methods
     def _build_inputs(self):
+        logging.info('Building inputs')
         self._left_dataset = self._build_input(self.left)
         self._right_dataset = self._build_input(self.right)
 
     def _build_input(self, dataset_location):
-        return DataSet(dataset_location, self.index_col, self.cols).read()
+        logging.info('Building dataset for %s', dataset_location)
+        return DataSet(dataset_location, self.index_col, self.cols, self.convert_numeric).read()
 
     def to_csv(self, s3=False):
         output_name = self.output.replace('.csv', '')
         output_left = output_name + '_left.csv'
         output_right = output_name + '_right.csv'
 
+        logging.info('Saving result left csv file %s', output_left)
         self.diff_result_left.to_csv(output_left)
+
+        logging.info('Saving result right csv file %s', output_right)
         self.diff_result_right.to_csv(output_right)
 
     def to_excel(self, s3=False):
@@ -100,20 +114,25 @@ class Diffino:
         print(self.diff_result_right.to_string())
 
     def _build_output(self):
+        logging.info('Building output started')
         if not self.output:
+            logging.info('Building output to console')
             self.to_console()
             return
         if '.csv' in self.output:
+            logging.info('Building output to csv')
             if 's3://' in self.output:
                 self.to_csv(s3=True)
             else:
                 self.to_csv(s3=False)
         elif '.xslx' in self.output or '.xls' in self.output:
+            logging.info('Building output to Excel')
             if 's3://' in self.output:
                 self.to_excel(s3=True)
             else:
                 self.to_excel(s3=False)
         elif '.json' in self.output:
+            logging.info('Building output to json')
             if 's3://' in self.output:
                 self.to_json(s3=True)
             else:
@@ -130,10 +149,14 @@ class Diffino:
 
         self._build_inputs()
 
+        logging.info('Performing merge of datasets in preparation for diff')
         merged_dataset = pd.merge(left=self._left_dataset, right=self._right_dataset, how='outer',
                      left_index=True, right_index=True, suffixes=['_left', '_right'])
 
+        logging.info('Creating diff result left')
         self.diff_result_left = merged_dataset.drop(self._left_dataset.index)
+
+        logging.info('Creating diff result right')
         self.diff_result_right = merged_dataset.drop(self._right_dataset.index)
 
         self._build_output()
