@@ -93,10 +93,10 @@ class Diffino:
         output_right = output_name + '_not_in_left.csv'
 
         logging.info('Saving result left csv file %s', output_left)
-        self.diff_result_left.to_csv(output_left)
+        self.diff_result_left.to_csv(output_left, index=False)
 
         logging.info('Saving result right csv file %s', output_right)
-        self.diff_result_right.to_csv(output_right)
+        self.diff_result_right.to_csv(output_right, index=False)
 
     def to_excel(self, s3=False):
         raise NotImplementedError

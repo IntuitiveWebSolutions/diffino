@@ -35,11 +35,11 @@ class TestModels(object):
   def test_diffino_diff_is_working(self, tmpdir):
     outputs = self._create_diff(tmpdir)
 
-    expected_data_not_in_left = """,address,state,zip,name,id
-10,eleven st,CA,66611,name eleven,11"""
+    expected_data_not_in_left = """address,state,zip,name,id
+eleven st,CA,66611,name eleven,11"""
 
-    expected_data_not_in_right = """,address,state,zip,name,id
-9,ten st,CA,66610,name ten,10"""
+    expected_data_not_in_right = """address,state,zip,name,id
+ten st,CA,66610,name ten,10"""
 
     expected_df_not_in_left = pd.read_csv(io.StringIO(expected_data_not_in_left))
     expected_df_not_in_right = pd.read_csv(io.StringIO(expected_data_not_in_right))
@@ -53,7 +53,7 @@ class TestModels(object):
   def test_diffino_no_diff(self, tmpdir):
     outputs = self._create_diff(tmpdir, right_csv='sample_left.csv')
 
-    expected_data = ',address,state,zip,name,id'
+    expected_data = 'address,state,zip,name,id'
 
     expected_df = pd.read_csv(io.StringIO(expected_data))
     resulting_left_csv = pd.read_csv(outputs[1])
@@ -71,10 +71,10 @@ class TestModels(object):
   def test_diffino_diff_with_selected_columns(self, tmpdir):
     outputs = self._create_diff(tmpdir, cols=['address', 'id'])
 
-    expected_data_right = """,address,id
-9,ten st,10"""
-    expected_data_left = """,address,id
-10,eleven st,11"""
+    expected_data_right = """address,id
+ten st,10"""
+    expected_data_left = """address,id
+eleven st,11"""
 
     expected_df_left = pd.read_csv(io.StringIO(expected_data_left))
     expected_df_right = pd.read_csv(io.StringIO(expected_data_right))
