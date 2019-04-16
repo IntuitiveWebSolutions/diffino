@@ -8,16 +8,15 @@ class DataSet:
     dfs = []
     md5_hashes = []
 
-    def __init__(self, location, index_col, cols, convert_numeric):
+    def __init__(self, location, cols, convert_numeric):
         self.location = location
-        self.index_col = index_col
         self.cols = cols
         self.convert_numeric = convert_numeric
 
     # Private methods
     def _get_from_local_file(self):
         logging.info('Reading local file %s', self.location)
-        return pd.read_csv(self.location, index_col=self.index_col, usecols=self.cols)
+        return pd.read_csv(self.location, usecols=self.cols)
 
     def _get_from_local_dir(self):
         return self._get_from_local_file()
@@ -74,7 +73,6 @@ class Diffino:
         self.cols = kwargs.get('cols')
         self.cols_left = kwargs.get('cols_left')
         self.cols_right = kwargs.get('cols_right')
-        self.index_col = kwargs.get('index_col', False)
 
         self.diff_result_left = {}
         self.diff_result_right = {}
@@ -87,12 +85,12 @@ class Diffino:
 
     def _build_input(self, dataset_location):
         logging.info('Building dataset for %s', dataset_location)
-        return DataSet(dataset_location, self.index_col, self.cols, self.convert_numeric).read()
+        return DataSet(dataset_location, self.cols, self.convert_numeric).read()
 
     def to_csv(self, s3=False):
         output_name = self.output.replace('.csv', '')
-        output_left = output_name + '_not_in_left.csv'
-        output_right = output_name + '_not_in_right.csv'
+        output_left = output_name + '_not_in_right.csv'
+        output_right = output_name + '_not_in_left.csv'
 
         logging.info('Saving result left csv file %s', output_left)
         self.diff_result_left.to_csv(output_left)
@@ -150,16 +148,16 @@ class Diffino:
         self._build_inputs()
 
         logging.info('Performing merge of datasets in preparation for diff')
-        merged_dataset = pd.merge(left=self._left_dataset, right=self._right_dataset, how='outer',
-                     left_index=True, right_index=True, suffixes=['_left', '_right'], indicator='exists')
+        merged_dataset = pd.merge(left=self._left_dataset, right=self._right_dataset, 
+                                  how='outer', indicator='exists')
 
         exists_left =  merged_dataset['exists'] == 'left_only'
         exists_right = merged_dataset['exists'] == 'right_only'
 
         logging.info('Creating diff result left')
-        self.diff_result_left = merged_dataset[exists_right].drop(columns='exists')
+        self.diff_result_left = merged_dataset[exists_left].drop(columns='exists')
 
         logging.info('Creating diff result right')
-        self.diff_result_right = merged_dataset[exists_left].drop(columns='exists')
+        self.diff_result_right = merged_dataset[exists_right].drop(columns='exists')
 
         self._build_output()
