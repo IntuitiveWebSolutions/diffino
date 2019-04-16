@@ -1,45 +1,54 @@
+import logging
 import pandas as pd
+
+logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
 
 class DataSet:
     dfs = []
     md5_hashes = []
 
-    def __init__(self, location):
+    def __init__(self, location, cols, convert_numeric):
         self.location = location
+        self.cols = cols
+        self.convert_numeric = convert_numeric
 
     # Private methods
     def _get_from_local_file(self):
-        self.dfs
-        self.md5_hashes
+        logging.info('Reading local file %s', self.location)
+        return pd.read_csv(self.location, usecols=self.cols)
 
     def _get_from_local_dir(self):
-        self._get_from_local_file()
+        return self._get_from_local_file()
 
     def _get_from_s3_file(self):
-        self.dfs
-        self.md5_hashes
+        raise NotImplementedError
 
     def _get_from_s3_bucket(self):
-        self._get_from_local_file()
+        raise NotImplementedError
 
     def _get_from_zip_local_file(self):
         # Unzip
-        self._get_from_local_file()
+        raise NotImplementedError
 
     # Public methods
     def read(self):
+        df = None
         if 's3://' in self.location:
             if '/' in self.location:
-                return self._get_from_s3_bucket()
+                df = self._get_from_s3_bucket()
             else:
-                return self. _get_from_s3_file()
+                df = self. _get_from_s3_file()
         else:
             if '/' in self.location:
-                return self._get_from_local_dir()
+                df = self._get_from_local_dir()
             else:
-                return self._get_from_local_file()
-
+                df = self._get_from_local_file()
+        
+        if self.convert_numeric:
+            logging.info('Converting to numeric for file %s', self.location)
+            df.apply(pd.to_numeric, errors='ignore')
+        return df
 
 class Diffino:
     '''
@@ -52,6 +61,7 @@ class Diffino:
     @param convert_numeric: Boolean indicating whether numeric columns should be treated as numbers (in pandas mode).
     @param mode: String with the diff mode: 'pandas' or 'md5'
     @param cols: List with subset of columns to be used for the diff check.
+    @param index_col: Column to be used as index
     @return: Nothing is returned
     '''
     def __init__(self, **kwargs):
@@ -64,40 +74,64 @@ class Diffino:
         self.cols_left = kwargs.get('cols_left')
         self.cols_right = kwargs.get('cols_right')
 
-        self.diff_results = {}
+        self.diff_result_left = {}
+        self.diff_result_right = {}
 
     # Private methods
     def _build_inputs(self):
+        logging.info('Building inputs')
         self._left_dataset = self._build_input(self.left)
         self._right_dataset = self._build_input(self.right)
 
     def _build_input(self, dataset_location):
-        return DataSet(location=dataset_location).read()
+        logging.info('Building dataset for %s', dataset_location)
+        return DataSet(dataset_location, self.cols, self.convert_numeric).read()
 
     def to_csv(self, s3=False):
-        pass
+        output_name = self.output.replace('.csv', '')
+        output_left = output_name + '_not_in_right.csv'
+        output_right = output_name + '_not_in_left.csv'
+
+        logging.info('Saving result left csv file %s', output_left)
+        self.diff_result_left.to_csv(output_left, index=False)
+
+        logging.info('Saving result right csv file %s', output_right)
+        self.diff_result_right.to_csv(output_right, index=False)
 
     def to_excel(self, s3=False):
-        pass
+        raise NotImplementedError
 
     def to_json(self, s3=False):
-        pass
+        raise NotImplementedError
 
-    def _build_output(self, dataset_location):
+    def to_console(self):
+        print('===============Left Output===============')
+        print(self.diff_result_left.to_string())
+
+        print('===============Right Output===============')
+        print(self.diff_result_right.to_string())
+
+    def _build_output(self):
+        logging.info('Building output started')
         if not self.output:
-            return False
-        if '.csv' in dataset_location:
-            if 's3://' in dataset_location:
+            logging.info('Building output to console')
+            self.to_console()
+            return
+        if '.csv' in self.output:
+            logging.info('Building output to csv')
+            if 's3://' in self.output:
                 self.to_csv(s3=True)
             else:
                 self.to_csv(s3=False)
-        elif '.xslx' in dataset_location or '.xls' in dataset_location:
-            if 's3://' in dataset_location:
+        elif '.xslx' in self.output or '.xls' in self.output:
+            logging.info('Building output to Excel')
+            if 's3://' in self.output:
                 self.to_excel(s3=True)
             else:
                 self.to_excel(s3=False)
-        elif '.json' in dataset_location:
-            if 's3://' in dataset_location:
+        elif '.json' in self.output:
+            logging.info('Building output to json')
+            if 's3://' in self.output:
                 self.to_json(s3=True)
             else:
                 self.to_json(s3=False)
@@ -108,15 +142,22 @@ class Diffino:
     # Public methods
     def build_diff(self):
         if not self.left or not self.right:
-            print '{}, {}'.format(self.left, self.right)
+            print('{}, {}'.format(self.left, self.right))
             raise UserWarning('Left and right datasets are both required')
+
         self._build_inputs()
-        if self._left_dataset.md5_hashes:
-            # compare self._left_dataset.md5_hashes with right one
-            # { 'row_1': 'MD5-1', 'row_2': 'MD5-2'}
-            self.diff_results = {}
-        elif self._left_dataset.dfs:
-            # compare self._left_dataset.dfs with right one
-            self.diff_results = pd.DataFrame()
+
+        logging.info('Performing merge of datasets in preparation for diff')
+        merged_dataset = pd.merge(left=self._left_dataset, right=self._right_dataset, 
+                                  how='outer', indicator='exists')
+
+        exists_left =  merged_dataset['exists'] == 'left_only'
+        exists_right = merged_dataset['exists'] == 'right_only'
+
+        logging.info('Creating diff result left')
+        self.diff_result_left = merged_dataset[exists_left].drop(columns='exists')
+
+        logging.info('Creating diff result right')
+        self.diff_result_right = merged_dataset[exists_right].drop(columns='exists')
+
         self._build_output()
-        return self.diff_results
