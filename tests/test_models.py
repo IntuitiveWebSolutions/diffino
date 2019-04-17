@@ -1,7 +1,6 @@
 import io
 import os
 import pandas as pd
-from pathlib import Path
 from diffino.models import DataSet, Diffino
 from pandas.testing import assert_frame_equal
 
@@ -19,10 +18,8 @@ class TestModels(object):
     diffino.build_diff()
 
     if not to_console:
-      path_left = Path(output_left)
-      path_right = Path(output_right)
-      assert path_left.is_file()
-      assert path_right.is_file()
+      assert os.path.isfile(output_left)
+      assert os.path.isfile(output_right)
     return output_location, output_left, output_right
 
   def test_dataset_read_from_local_file(self):
@@ -33,12 +30,12 @@ class TestModels(object):
     assert df.empty is not True
   
   def test_diffino_diff_is_working(self, tmpdir):
-    outputs = self._create_diff(tmpdir)
+    outputs = self._create_diff(str(tmpdir))
 
-    expected_data_not_in_left = """address,state,zip,name,id
+    expected_data_not_in_left = u"""address,state,zip,name,id
 eleven st,CA,66611,name eleven,11"""
 
-    expected_data_not_in_right = """address,state,zip,name,id
+    expected_data_not_in_right = u"""address,state,zip,name,id
 ten st,CA,66610,name ten,10"""
 
     expected_df_not_in_left = pd.read_csv(io.StringIO(expected_data_not_in_left))
@@ -51,9 +48,9 @@ ten st,CA,66610,name ten,10"""
     assert_frame_equal(expected_df_not_in_right, result_not_in_right)
 
   def test_diffino_no_diff(self, tmpdir):
-    outputs = self._create_diff(tmpdir, right_csv='sample_left.csv')
+    outputs = self._create_diff(str(tmpdir), right_csv='sample_left.csv')
 
-    expected_data = 'address,state,zip,name,id'
+    expected_data = u'address,state,zip,name,id'
 
     expected_df = pd.read_csv(io.StringIO(expected_data))
     resulting_left_csv = pd.read_csv(outputs[1])
@@ -63,17 +60,17 @@ ten st,CA,66610,name ten,10"""
     assert_frame_equal(expected_df, resulting_right_csv, check_dtype=False)
   
   def test_diffino_build_output_to_console(self, tmpdir, capsys):
-    self._create_diff(tmpdir, to_console=True)
+    self._create_diff(str(tmpdir), to_console=True)
     captured = capsys.readouterr()
     assert 'Left Output' in captured.out
     assert 'Right Output' in captured.out
   
   def test_diffino_diff_with_selected_columns(self, tmpdir):
-    outputs = self._create_diff(tmpdir, cols=['address', 'id'])
+    outputs = self._create_diff(str(tmpdir), cols=['address', 'id'])
 
-    expected_data_right = """address,id
+    expected_data_right = u"""address,id
 ten st,10"""
-    expected_data_left = """address,id
+    expected_data_left = u"""address,id
 eleven st,11"""
 
     expected_df_left = pd.read_csv(io.StringIO(expected_data_left))
