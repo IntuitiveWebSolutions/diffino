@@ -13,7 +13,8 @@ def main():
 
     args = parser.parse_args()
 
-    diffino = Diffino(left=args.left_dataset, right=args.right_dataset, output=args.output, cols=args.cols)
+    diffino = Diffino(left=args.left_dataset, right=args.right_dataset, output=args.output,
+                      cols=args.cols, convert_numeric=args.convert_numeric)
 
     diffino.build_diff()
 
