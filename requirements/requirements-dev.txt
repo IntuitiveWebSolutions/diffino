@@ -1,4 +1,4 @@
-pytest
-pytest-cov
-black
+black==19.3b0
+pytest==4.4.0
+pytest-cov==2.6.1
 -r ../requirements.txt

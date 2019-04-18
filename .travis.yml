@@ -1,10 +1,10 @@
 language: python
 python:
-  # - 2.7
+  # - 2.7 not supported by black
   # - 3.2 not supported by pytest
-  - 3.3
-  - 3.4
-  - 3.5
+  # - 3.3 not supported by black
+  # - 3.4 not supported by black
+  # - 3.5 not supported by black
   - 3.6
 install:
   - pip install -r requirements/requirements-dev.txt && pip install -e .
