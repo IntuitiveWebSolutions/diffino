@@ -8,7 +8,7 @@ jobs:
         - 3.6
       install:
         - pip install -e .
-        - pip install -r requirements/requirements-dev.txt
+        - pip install -r requirements/requirements-lint.txt
     - stage: test
       script: pytest tests/test_models.py
       python:
@@ -16,7 +16,7 @@ jobs:
         - 3.6
       install:
         - pip install -e .
-        - pip install -r requirements/requirements-dev.txt
+        - pip install -r requirements/requirements-test.txt
 
 stages:
   - lint
