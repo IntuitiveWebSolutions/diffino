@@ -4,6 +4,8 @@ jobs:
   include:
     - stage: lint
       script: black diffino tests --check | lintly --format=black --log
+      python:
+        - 3.6
       install:
         - pip install -e .
         - pip install -r requirements/requirements-dev.txt
