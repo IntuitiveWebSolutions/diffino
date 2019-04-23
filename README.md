@@ -1,3 +1,5 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+
 diffino
 ====
 [![Run Status](https://api.shippable.com/projects/590fc79a8874ee070046b384/badge?branch=master)](https://app.shippable.com/github/ivansabik/diffino)
