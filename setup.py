@@ -1,7 +1,7 @@
 import pathlib
 from setuptools import setup
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
@@ -23,5 +23,6 @@ setup(
     description="Diffing tools for comparing datasets in CSV, XLSX and other formats",
     long_description=README,
     long_description_content_type="text/markdown",
-    keywords="diffing comparing csv excel json"
+    keywords="diffing comparing csv excel json",
+    url="https://github.com/IntuitiveWebSolutions/diffino"
 )

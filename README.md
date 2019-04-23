@@ -1,8 +1,7 @@
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-
 diffino
 ====
 [![Build Status](https://travis-ci.com/IntuitiveWebSolutions/diffino.svg?branch=master)](https://travis-ci.com/IntuitiveWebSolutions/diffino)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 Diffing tools for comparing datasets in CSV, XLSX and other formats available as CLI app, API, web app and module. Powered by the awesome Pandas library for Python.
 
