@@ -1,13 +1,13 @@
 import pathlib
 from setuptools import setup
 
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
-# The directory containing this file
-HERE = pathlib.Path(__file__).parent
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 # The text of the README file
 README = (HERE / "README.md").read_text()
@@ -21,7 +21,7 @@ setup(
     entry_points={'console_scripts': ['diffino = diffino.cli:main']},
     author="BriteCore",
     description="Diffing tools for comparing datasets in CSV, XLSX and other formats",
-    long_description=README,
+    long_description=read('README.md'),
     long_description_content_type="text/markdown",
     keywords="diffing comparing csv excel json",
     url="https://github.com/IntuitiveWebSolutions/diffino"
