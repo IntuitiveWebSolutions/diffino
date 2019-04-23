@@ -1,10 +1,7 @@
 import os
 from setuptools import setup
 
-VERSION = "0.1.4"
-
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
+VERSION = "0.1.5"
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -14,7 +11,9 @@ setup(
     version=VERSION,
     packages=["diffino"],
     include_package_data=True,
-    install_requires=required,
+    install_requires=[
+        "pandas==0.24.2"
+    ],
     entry_points={'console_scripts': ['diffino = diffino.cli:main']},
     author="BriteCore",
     description="Diffing tools for comparing datasets in CSV, XLSX and other formats",
