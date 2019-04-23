@@ -3,7 +3,7 @@ language: python
 jobs:
   include:
     - stage: lint
-      script: black diffino tests --check | lintly --format=black --log
+      script: black diffino tests --check
       python:
         - 3.6
       install:

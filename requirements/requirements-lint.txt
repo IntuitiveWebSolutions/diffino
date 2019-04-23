@@ -1,3 +1,2 @@
 black==19.3b0
-lintly==0.3.0
 -r ../requirements.txt
