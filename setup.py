@@ -1,6 +1,7 @@
 import pathlib
 from setuptools import setup
 
+VERSION = "0.1.1"
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
@@ -13,7 +14,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="diffino",
-    version="0.1",
+    version=VERSION,
     packages=["diffino"],
     include_package_data=True,
     install_requires=required,
