@@ -9,9 +9,6 @@ with open('requirements.txt') as f:
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-# The text of the README file
-README = (HERE / "README.md").read_text()
-
 setup(
     name="diffino",
     version=VERSION,
