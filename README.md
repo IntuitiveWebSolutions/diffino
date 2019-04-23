@@ -2,8 +2,7 @@
 
 diffino
 ====
-[![Run Status](https://api.shippable.com/projects/590fc79a8874ee070046b384/badge?branch=master)](https://app.shippable.com/github/ivansabik/diffino)
-[![Coverage Badge](https://api.shippable.com/projects/590fc79a8874ee070046b384/coverageBadge?branch=master)](https://app.shippable.com/github/ivansabik/diffino)
+[![Build Status](https://travis-ci.com/IntuitiveWebSolutions/diffino.svg?branch=master)](https://travis-ci.com/IntuitiveWebSolutions/diffino)
 
 Diffing tools for comparing datasets in CSV, XLSX and other formats available as CLI app, API, web app and module. Powered by the awesome Pandas library for Python.
 
