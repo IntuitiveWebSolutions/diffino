@@ -1,4 +1,4 @@
-import pathlib
+import os
 from setuptools import setup
 
 VERSION = "0.1.3"
