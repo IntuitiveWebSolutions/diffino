@@ -12,7 +12,7 @@ setup(
     packages=["diffino"],
     include_package_data=True,
     install_requires=[
-        "pandas==0.24.2"
+        "pandas==0.19.2"
     ],
     entry_points={'console_scripts': ['diffino = diffino.cli:main']},
     author="BriteCore",
