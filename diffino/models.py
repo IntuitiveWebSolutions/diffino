@@ -161,9 +161,9 @@ class Diffino:
         exists_right = merged_dataset["exists"] == "right_only"
 
         logging.info("Creating diff result left")
-        self.diff_result_left = merged_dataset[exists_left].drop(columns="exists")
+        self.diff_result_left = merged_dataset[exists_left].drop(["exists"], axis=1)
 
         logging.info("Creating diff result right")
-        self.diff_result_right = merged_dataset[exists_right].drop(columns="exists")
+        self.diff_result_right = merged_dataset[exists_right].drop(["exists"], axis=1)
 
         self._build_output()

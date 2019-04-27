@@ -1,8 +1,47 @@
 import io
 import os
+import numpy as np
+import numpy.testing as npt
 import pandas as pd
 from diffino.models import DataSet, Diffino
-from pandas.testing import assert_frame_equal
+
+
+def assert_frames_equal(actual, expected):
+    """
+    Compare DataFrame items by index and column and
+    raise AssertionError if any item is not equal.
+
+    Ordering is unimportant, items are compared only by label.
+    NaN and infinite values are supported.
+    
+    Parameters
+    ----------
+    actual : pandas.DataFrame
+    expected : pandas.DataFrame
+
+    """
+    comp = npt.assert_equal
+
+    assert isinstance(actual, pd.DataFrame) and isinstance(
+        expected, pd.DataFrame
+    ), "Inputs must both be pandas DataFrames."
+
+    for i, exp_row in expected.iterrows():
+        assert i in actual.index, "Expected row {!r} not found.".format(i)
+
+        act_row = actual.loc[i]
+
+        for j, exp_item in exp_row.iteritems():
+            assert j in act_row.index, "Expected column {!r} not found.".format(j)
+
+            act_item = act_row[j]
+
+            try:
+                comp(act_item, exp_item)
+            except AssertionError as e:
+                raise AssertionError(
+                    e.message + "\n\nColumn: {!r}\nRow: {!r}".format(j, i)
+                )
 
 
 class TestModels(object):
@@ -55,8 +94,8 @@ ten st,CA,66610,name ten,10"""
         result_not_in_left = pd.read_csv(outputs[1])
         result_not_in_right = pd.read_csv(outputs[2])
 
-        assert_frame_equal(expected_df_not_in_left, result_not_in_left)
-        assert_frame_equal(expected_df_not_in_right, result_not_in_right)
+        assert_frames_equal(expected_df_not_in_left, result_not_in_left)
+        assert_frames_equal(expected_df_not_in_right, result_not_in_right)
 
     def test_diffino_no_diff(self, tmpdir):
         outputs = self._create_diff(str(tmpdir), right_csv="sample_left.csv")
@@ -67,8 +106,8 @@ ten st,CA,66610,name ten,10"""
         resulting_left_csv = pd.read_csv(outputs[1])
         resulting_right_csv = pd.read_csv(outputs[2])
 
-        assert_frame_equal(expected_df, resulting_left_csv, check_dtype=False)
-        assert_frame_equal(expected_df, resulting_right_csv, check_dtype=False)
+        assert_frames_equal(expected_df, resulting_left_csv)
+        assert_frames_equal(expected_df, resulting_right_csv)
 
     def test_diffino_build_output_to_console(self, tmpdir, capsys):
         self._create_diff(str(tmpdir), to_console=True)
@@ -89,5 +128,5 @@ eleven st,11"""
         resulting_left_csv = pd.read_csv(outputs[1])
         resulting_right_csv = pd.read_csv(outputs[2])
 
-        assert_frame_equal(expected_df_left, resulting_left_csv, check_dtype=False)
-        assert_frame_equal(expected_df_right, resulting_right_csv, check_dtype=False)
+        assert_frames_equal(expected_df_left, resulting_left_csv)
+        assert_frames_equal(expected_df_right, resulting_right_csv)
