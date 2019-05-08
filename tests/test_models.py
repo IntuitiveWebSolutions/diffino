@@ -52,6 +52,7 @@ class TestModels(object):
         right_csv="sample_right.csv",
         to_console=False,
         cols=None,
+        output_only_diffs=False,
     ):
         output_location = (
             False if to_console else os.path.join(target_dir, "output.csv")
@@ -62,12 +63,16 @@ class TestModels(object):
         location_left = fname = os.path.join(os.path.dirname(__file__), left_csv)
         location_right = fname = os.path.join(os.path.dirname(__file__), right_csv)
         diffino = Diffino(
-            left=location_left, right=location_right, output=output_location, cols=cols
+            left=location_left,
+            right=location_right,
+            output=output_location,
+            cols=cols,
+            output_only_diffs=output_only_diffs,
         )
 
         diffino.build_diff()
 
-        if not to_console:
+        if not to_console and not output_only_diffs:
             assert os.path.isfile(output_left)
             assert os.path.isfile(output_right)
         return output_location, output_left, output_right
@@ -112,8 +117,8 @@ ten st,CA,66610,name ten,10"""
     def test_diffino_build_output_to_console(self, tmpdir, capsys):
         self._create_diff(str(tmpdir), to_console=True)
         captured = capsys.readouterr()
-        assert "Left Output" in captured.out
-        assert "Right Output" in captured.out
+        assert "Differences found on left file" in captured.out
+        assert "Differences found on right file" in captured.out
 
     def test_diffino_diff_with_selected_columns(self, tmpdir):
         outputs = self._create_diff(str(tmpdir), cols=["address", "id"])
@@ -130,3 +135,21 @@ eleven st,11"""
 
         assert_frames_equal(expected_df_left, resulting_left_csv)
         assert_frames_equal(expected_df_right, resulting_right_csv)
+
+    def test_diffino_output_only_diffs_console(self, tmpdir, capsys):
+        self._create_diff(
+            str(tmpdir),
+            to_console=True,
+            right_csv="sample_left.csv",
+            output_only_diffs=True,
+        )
+        captured = capsys.readouterr()
+        assert "Differences found on left file" not in captured.out
+        assert "Differences found on right file" not in captured.out
+
+    def test_diffino_output_only_diffs_csv(self, tmpdir):
+        outputs = self._create_diff(
+            str(tmpdir), right_csv="sample_left.csv", output_only_diffs=True
+        )
+        assert not os.path.isfile(outputs[0])
+        assert not os.path.isfile(outputs[1])

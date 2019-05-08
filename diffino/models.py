@@ -75,6 +75,7 @@ class Diffino:
         self.cols = kwargs.get("cols")
         self.cols_left = kwargs.get("cols_left")
         self.cols_right = kwargs.get("cols_right")
+        self.output_only_diffs = kwargs.get("output_only_diffs")
 
         self.diff_result_left = {}
         self.diff_result_right = {}
@@ -89,16 +90,28 @@ class Diffino:
         logging.info("Building dataset for %s", dataset_location)
         return DataSet(dataset_location, self.cols, self.convert_numeric).read()
 
+    def _should_print_left(self):
+        return not self.diff_result_left.empty or (
+            self.diff_result_left.empty and not self.output_only_diffs
+        )
+
+    def _should_print_right(self):
+        return not self.diff_result_right.empty or (
+            self.diff_result_right.empty and not self.output_only_diffs
+        )
+
     def to_csv(self, s3=False):
         output_name = self.output.replace(".csv", "")
-        output_left = output_name + "_not_in_right.csv"
-        output_right = output_name + "_not_in_left.csv"
 
-        logging.info("Saving result left csv file %s", output_left)
-        self.diff_result_left.to_csv(output_left, index=False)
+        if self._should_print_left():
+            output_left = output_name + "_not_in_right.csv"
+            logging.info("Saving result left csv file %s", output_left)
+            self.diff_result_left.to_csv(output_left, index=False)
 
-        logging.info("Saving result right csv file %s", output_right)
-        self.diff_result_right.to_csv(output_right, index=False)
+        if self._should_print_right():
+            output_right = output_name + "_not_in_left.csv"
+            logging.info("Saving result right csv file %s", output_right)
+            self.diff_result_right.to_csv(output_right, index=False)
 
     def to_excel(self, s3=False):
         raise NotImplementedError
@@ -107,11 +120,13 @@ class Diffino:
         raise NotImplementedError
 
     def to_console(self):
-        print("===============Left Output===============")
-        print(self.diff_result_left.to_string())
+        if self._should_print_left():
+            print("=============== Differences found on left file ===============")
+            print(self.diff_result_left.to_string())
 
-        print("===============Right Output===============")
-        print(self.diff_result_right.to_string())
+        if self._should_print_right():
+            print("=============== Differences found on right file ===============")
+            print(self.diff_result_right.to_string())
 
     def _build_output(self):
         logging.info("Building output started")

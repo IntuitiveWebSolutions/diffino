@@ -23,6 +23,11 @@ def main():
     parser.add_argument(
         "--cols", nargs="+", default=None, help="Columns to be used for comparing"
     )
+    parser.add_argument(
+        "--output-only-diffs",
+        action="store_true",
+        help="Output only when a difference exists",
+    )
     parser.add_argument("--output", help="Output file")
 
     args = parser.parse_args()
@@ -33,6 +38,7 @@ def main():
         output=args.output,
         cols=args.cols,
         convert_numeric=args.convert_numeric,
+        output_only_diffs=args.output_only_diffs,
     )
 
     diffino.build_diff()
