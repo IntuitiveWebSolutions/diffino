@@ -70,12 +70,12 @@ class TestModels(object):
             output_only_diffs=output_only_diffs,
         )
 
-        diffino.build_diff()
+        rows_count = diffino.build_diff()
 
         if not to_console and not output_only_diffs:
             assert os.path.isfile(output_left)
             assert os.path.isfile(output_right)
-        return output_location, output_left, output_right
+        return output_location, output_left, output_right, rows_count
 
     def test_dataset_read_from_local_file(self):
         location = fname = os.path.join(os.path.dirname(__file__), "sample_left.csv")
@@ -151,5 +151,10 @@ eleven st,11"""
         outputs = self._create_diff(
             str(tmpdir), right_csv="sample_left.csv", output_only_diffs=True
         )
-        assert not os.path.isfile(outputs[0])
         assert not os.path.isfile(outputs[1])
+        assert not os.path.isfile(outputs[2])
+
+    def test_diffino_return_diff_count(self, tmpdir):
+        outputs = self._create_diff(str(tmpdir))
+        assert outputs[3][0] is 1
+        assert outputs[3][0] is 1

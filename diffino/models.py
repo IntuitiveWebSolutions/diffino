@@ -182,3 +182,5 @@ class Diffino:
         self.diff_result_right = merged_dataset[exists_right].drop(["exists"], axis=1)
 
         self._build_output()
+
+        return (len(self.diff_result_left.index), len(self.diff_result_right.index))
