@@ -52,7 +52,7 @@ class TestModels(object):
         right_csv="sample_right.csv",
         to_console=False,
         cols=None,
-        output_only_diffs=False
+        output_only_diffs=False,
     ):
         output_location = (
             False if to_console else os.path.join(target_dir, "output.csv")
@@ -63,8 +63,11 @@ class TestModels(object):
         location_left = fname = os.path.join(os.path.dirname(__file__), left_csv)
         location_right = fname = os.path.join(os.path.dirname(__file__), right_csv)
         diffino = Diffino(
-            left=location_left, right=location_right, output=output_location, cols=cols,
-            output_only_diffs=output_only_diffs
+            left=location_left,
+            right=location_right,
+            output=output_location,
+            cols=cols,
+            output_only_diffs=output_only_diffs,
         )
 
         diffino.build_diff()
@@ -134,12 +137,19 @@ eleven st,11"""
         assert_frames_equal(expected_df_right, resulting_right_csv)
 
     def test_diffino_output_only_diffs_console(self, tmpdir, capsys):
-        self._create_diff(str(tmpdir), to_console=True, right_csv="sample_left.csv", output_only_diffs=True)
+        self._create_diff(
+            str(tmpdir),
+            to_console=True,
+            right_csv="sample_left.csv",
+            output_only_diffs=True,
+        )
         captured = capsys.readouterr()
         assert "Differences found on left file" not in captured.out
         assert "Differences found on right file" not in captured.out
 
     def test_diffino_output_only_diffs_csv(self, tmpdir):
-        outputs = self._create_diff(str(tmpdir), right_csv="sample_left.csv", output_only_diffs=True)
+        outputs = self._create_diff(
+            str(tmpdir), right_csv="sample_left.csv", output_only_diffs=True
+        )
         assert not os.path.isfile(outputs[0])
         assert not os.path.isfile(outputs[1])

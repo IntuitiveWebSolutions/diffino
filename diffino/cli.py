@@ -26,7 +26,7 @@ def main():
     parser.add_argument(
         "--output-only-diffs",
         action="store_true",
-        help="Output only when a difference exists"
+        help="Output only when a difference exists",
     )
     parser.add_argument("--output", help="Output file")
 
@@ -38,7 +38,7 @@ def main():
         output=args.output,
         cols=args.cols,
         convert_numeric=args.convert_numeric,
-        output_only_diffs=args.output_only_diffs
+        output_only_diffs=args.output_only_diffs,
     )
 
     diffino.build_diff()

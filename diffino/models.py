@@ -91,10 +91,14 @@ class Diffino:
         return DataSet(dataset_location, self.cols, self.convert_numeric).read()
 
     def _should_print_left(self):
-        return not self.diff_result_left.empty or (self.diff_result_left.empty and not self.output_only_diffs)
+        return not self.diff_result_left.empty or (
+            self.diff_result_left.empty and not self.output_only_diffs
+        )
 
     def _should_print_right(self):
-        return not self.diff_result_right.empty or (self.diff_result_right.empty and not self.output_only_diffs)
+        return not self.diff_result_right.empty or (
+            self.diff_result_right.empty and not self.output_only_diffs
+        )
 
     def to_csv(self, s3=False):
         output_name = self.output.replace(".csv", "")
