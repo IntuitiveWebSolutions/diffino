@@ -5,19 +5,29 @@ diffino
 
 Diffing tools for comparing datasets in CSV, XLSX and other formats available as CLI app, API, web app and module. Powered by the awesome Pandas library for Python.
 
-- Compare one or more CSV datasets using MD5 hash of the files
-- Compare one or more CSV and XLSX datasets using Pandas where you can output differences row by row
+### Done
+- Install as CLI app
+- Install and use as python module
+- Compare two CSV datasets using Pandas where you can output differences row by row
 - Use the following inputs for your datasets:
-  - Local file in CSV (for both MD5 and pandas modes)
-  - Local file in CSV or XLSX (only for pandas mode)
-  - Local directory with CSVs or XSLX files (for both MD5 and pandas modes)
-  - ZIP file with CSVs or XLSX files (only for pandas mode)
-  - File in S3 (for both MD5 and pandas modes)
-  - Bucket in S3 (for both MD5 and pandas modes)
+  - Local file in CSV pandas modes
+  - File in S3 pandas mode
 - Define a subset of columns to use for comparing/diffing (only works with pandas mode, not supported for MD5 comparison)
 - Output differences to:
   - Console (print)
   - CSV file
+
+### To-Do (ROADMAP)
+- Compare one or more CSV datasets using MD5 hash of the files
+- Compare one or more XLSX datasets using Pandas where you can output differences row by row
+- Use the following inputs for your datasets:
+  - Local file in CSV MD5
+  - Local file in XLSX (only for pandas mode)
+  - Local directory with CSVs or XSLX files (for both MD5 and pandas modes)
+  - ZIP file with CSVs or XLSX files (only for pandas mode)
+  - File in S3 for MD5
+  - Bucket in S3 (for both MD5 and pandas modes)
+- Output differences to:
   - XSLX file
   - JSON file
 
@@ -29,51 +39,9 @@ To install as module and CLI:
 pip install diffino
 ```
 
-To run the API and web app first change any configuration params you need in `docker-compose.yml`
-
-```
-docker-compose up
-```
-
 ## CLI
 
 Diffino will try it's best to guess your input storage mechanisms, for that you need to include `s3://` in the input argument and/or the `.csv`, `.xls` and `.xlsx extensions`.
-
-### Compare using MD5
-
-#### Compare two CSV files using MD5 hash of both files
-
-```
-diffino before_dataset.csv after_dataset.csv --mode md5
-```
-
-#### Compare CSV files in two directories recursively using MD5 hashes of the files
-
-Diffino will compare files with the same name in both folders recursively:
-
-```
-diffino before_dataset after_dataset --mode md5
-```
-
-#### Compare CSV files in two ZIP files recursively using MD5 hashes of the files
-
-Diffino will compare files with the same name in both ZIP files recursively:
-
-```
-diffino before_dataset.zip after_dataset.zip --mode md5
-```
-
-#### Compare two CSV files in an S3 bucket using MD5 hash of both files
-
-```
-diffino s3://bucket/before_dataset.csv s3://bucket/after_dataset.csv --mode md5
-```
-
-#### Compare CSV files in an S3 bucket recursively using MD5 hashes of the files
-
-```
-diffino s3://bucket/before_dataset s3://bucket/after_dataset --mode md5
-```
 
 ### Compare using pandas
 
@@ -104,6 +72,21 @@ Diffino will try it's best to guess your output storage mechanism, for that you 
 ```
 diffino file_1.csv file_2.csv --output diff.csv
 ```
+
+Note: Two files are going to be generated, comparing the left argument file to the right argument file. For the example above, 2 files are going to be created:
+
+* `diff_left.csv`
+* `diff_right.csv`
+
+#### Avoid creating unnecesary files
+
+If you want to avoid unnecesary noise, you can prevent diffino from creating resulting files if there are no actual differences with the `--output-only-diffs` like
+```
+diffino file_1.csv file_2.csv --output diff.csv
+```
+
+For the above example, if `file_1` has some extra rows that are not present in `file_2`, but `file_2` only have rows that are present in `file_1`, then we are going to end up only with a resulting `diff_left.csv` file.
+
 
 #### Output to a local Excel file
 
@@ -142,23 +125,6 @@ diffino file_1.csv file_2.csv --output s3://bucket/diff.json
 
 Useful if you want to integrate as part of you ETL or as part of you Continuous Integration (CI) builds.
 
-### Get a dictionary with differences using MD5 mode
-
-```python
-from diffino.models import Diffino
-
-diffino = Diffino(left='one.csv', right='two.csv', mode='md5')
-results = diffino.build_diff()
-```
-
-In the above example, the `results` variable contains a dictionary with md5 hashes:
-
-```python
-results['left_only']
-results['right_only']
-results['both']
-```
-
 ### Get a dictionary with differences using pandas mode
 For using all columns:
 
@@ -169,12 +135,12 @@ diffino = Diffino(left='s3://bucket/one.csv', right='s3://bucket/two.csv', mode=
 results = diffino.build_diff()
 ```
 
-In the above example, the `results` variable contains a dictionary with differences:
+In the above example, the `results` variable contains a tuple with the first index containing
+the left differences count and the second index with the right differences count:
 
 ```python
-results['left_only']
-results['right_only']
-results['both']
+results(0)
+results(1)
 ```
 
 And for using a subset of columns you can specify a string with a Python list of the column names you want to include:
@@ -183,15 +149,16 @@ And for using a subset of columns you can specify a string with a Python list of
 from diffino.models import Diffino
 
 diffino = Diffino(
-  left='one.xlsx',
-  right='two.xlsx',
+  left='one.csv',
+  right='two.csv',
   mode='pandas',
   cols=['id', 'name']
 )
 results = diffino.build_diff()
 ```
 
-Different column names? No problemo that works too!
+## COMING SOON
+Different column names? No problemo that works too! 
 
 ```python
 from diffino.models import Diffino
