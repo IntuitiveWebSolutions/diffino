@@ -1,7 +1,14 @@
 import logging
+import boto3
 import pandas as pd
+from urlparse import urlparse
 
 logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
+
+
+def get_bucket_and_key_from_s3_path(path):
+    o = urlparse(path, allow_fragments=False)
+    return (o.netloc, o.path.lstrip('/'))
 
 
 class DataSet:
@@ -22,7 +29,12 @@ class DataSet:
         return self._get_from_local_file()
 
     def _get_from_s3_file(self):
-        raise NotImplementedError
+        logging.info("Reading from S3 %s", self.location)
+        bucket_key = get_bucket_and_key_from_s3_path(self.location)
+
+        s3 = boto3.client('s3')
+        obj = s3.get_object(Bucket=bucket_key[0], Key=bucket_key[1])
+        return pd.read_csv(obj['Body'], usecols=self.cols)
 
     def _get_from_s3_bucket(self):
         raise NotImplementedError
@@ -35,7 +47,7 @@ class DataSet:
     def read(self):
         df = None
         if "s3://" in self.location:
-            if "/" in self.location:
+            if self.location.endswith('/'):
                 df = self._get_from_s3_bucket()
             else:
                 df = self._get_from_s3_file()
