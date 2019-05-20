@@ -1,7 +1,15 @@
+from io import BytesIO
 import logging
+import boto3
 import pandas as pd
+from urlparse import urlparse
 
 logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
+
+
+def get_bucket_and_key_from_s3_path(path):
+    o = urlparse(path, allow_fragments=False)
+    return (o.netloc, o.path.lstrip("/"))
 
 
 class DataSet:
@@ -22,7 +30,12 @@ class DataSet:
         return self._get_from_local_file()
 
     def _get_from_s3_file(self):
-        raise NotImplementedError
+        logging.info("Reading from S3 %s", self.location)
+        bucket_key = get_bucket_and_key_from_s3_path(self.location)
+
+        s3 = boto3.client("s3")
+        obj = s3.get_object(Bucket=bucket_key[0], Key=bucket_key[1])
+        return pd.read_csv(obj["Body"], usecols=self.cols)
 
     def _get_from_s3_bucket(self):
         raise NotImplementedError
@@ -35,7 +48,7 @@ class DataSet:
     def read(self):
         df = None
         if "s3://" in self.location:
-            if "/" in self.location:
+            if self.location.endswith("/"):
                 df = self._get_from_s3_bucket()
             else:
                 df = self._get_from_s3_file()
@@ -100,18 +113,35 @@ class Diffino:
             self.diff_result_right.empty and not self.output_only_diffs
         )
 
+    def _save_csv(self, df, output_file, s3=False):
+        if not s3:
+            logging.info("Saving result csv file %s", output_file)
+            df.to_csv(output_file, index=False)
+            return
+
+        logging.info("Saving result csv file %s to S3", output_file)
+
+        bucket_key = get_bucket_and_key_from_s3_path(output_file)
+        csv_buffer = BytesIO()
+        df.to_csv(csv_buffer, index=False)
+        s3client = boto3.client("s3")
+        response = s3client.put_object(
+            Body=csv_buffer.getvalue(),
+            ContentType="application/vnd.ms-excel",
+            Bucket=bucket_key[0],
+            Key=bucket_key[1],
+        )
+
     def to_csv(self, s3=False):
         output_name = self.output.replace(".csv", "")
 
         if self._should_print_left():
             output_left = output_name + "_not_in_right.csv"
-            logging.info("Saving result left csv file %s", output_left)
-            self.diff_result_left.to_csv(output_left, index=False)
+            self._save_csv(self.diff_result_left, output_left, s3)
 
         if self._should_print_right():
             output_right = output_name + "_not_in_left.csv"
-            logging.info("Saving result right csv file %s", output_right)
-            self.diff_result_right.to_csv(output_right, index=False)
+            self._save_csv(self.diff_result_right, output_right, s3)
 
     def to_excel(self, s3=False):
         raise NotImplementedError

@@ -1,9 +1,12 @@
+import boto3
 import io
 import os
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
+
 from diffino.models import DataSet, Diffino
+from moto import mock_s3
 
 
 def assert_frames_equal(actual, expected):
@@ -158,3 +161,43 @@ eleven st,11"""
         outputs = self._create_diff(str(tmpdir))
         assert outputs[3][0] is 1
         assert outputs[3][0] is 1
+
+    @mock_s3
+    def test_diffino_s3_support(self, tmpdir):
+        conn = boto3.resource("s3")
+        # We need to create the bucket since this is all in Moto's 'virtual' AWS account
+        bucket = "britedata-diff"
+        conn.create_bucket(Bucket=bucket)
+        s3 = boto3.client("s3")
+
+        key_current = "current.csv"
+        key_new = "new.csv"
+        value = u"""address,state,zip,name,id
+eleven st,CA,66611,name eleven,11"""
+        s3.put_object(Bucket=bucket, Key=key_current, Body=value)
+        s3.put_object(Bucket=bucket, Key=key_new, Body=value)
+
+        location_left = "s3://" + bucket + "/" + key_current
+        location_right = "s3://" + bucket + "/" + key_new
+        output_location = "s3://" + bucket + "/output.csv"
+        diffino = Diffino(
+            left=location_left, right=location_right, output=output_location
+        )
+        diffino.build_diff()
+
+        body_left = (
+            conn.Object(bucket, "output_not_in_left.csv")
+            .get()["Body"]
+            .read()
+            .decode("utf-8")
+        )
+        body_right = (
+            conn.Object(bucket, "output_not_in_right.csv")
+            .get()["Body"]
+            .read()
+            .decode("utf-8")
+        )
+
+        expected_result = u"""address,state,zip,name,id\n"""
+        assert body_left == expected_result
+        assert body_right == expected_result

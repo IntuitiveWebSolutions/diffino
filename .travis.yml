@@ -10,6 +10,8 @@ jobs:
         - pip install -e .
         - pip install -r requirements/requirements-lint.txt
     - stage: test
+      before_script:
+        - export BOTO_CONFIG=/dev/null
       script: pytest tests/test_models.py
       python:
         - 2.7
