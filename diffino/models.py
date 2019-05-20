@@ -1,3 +1,4 @@
+from io import BytesIO
 import logging
 import boto3
 import pandas as pd
@@ -111,19 +112,36 @@ class Diffino:
         return not self.diff_result_right.empty or (
             self.diff_result_right.empty and not self.output_only_diffs
         )
+    
+    def _save_csv(self, df, output_file, s3=False):
+        if not s3:
+            logging.info("Saving result csv file %s", output_file)
+            df.to_csv(output_file, index=False)
+            return
+
+        logging.info("Saving result csv file %s to S3", output_file)
+
+        bucket_key = get_bucket_and_key_from_s3_path(output_file)
+        csv_buffer = BytesIO()
+        df.to_csv(csv_buffer, index=False)
+        s3client = boto3.client("s3")
+        response = s3client.put_object(
+            Body=csv_buffer.getvalue(),
+            ContentType='application/vnd.ms-excel',
+            Bucket=bucket_key[0],
+            Key=bucket_key[1],
+        )
 
     def to_csv(self, s3=False):
         output_name = self.output.replace(".csv", "")
 
         if self._should_print_left():
             output_left = output_name + "_not_in_right.csv"
-            logging.info("Saving result left csv file %s", output_left)
-            self.diff_result_left.to_csv(output_left, index=False)
+            self._save_csv(self.diff_result_left, output_left, s3)
 
         if self._should_print_right():
             output_right = output_name + "_not_in_left.csv"
-            logging.info("Saving result right csv file %s", output_right)
-            self.diff_result_right.to_csv(output_right, index=False)
+            self._save_csv(self.diff_result_right, output_right, s3)
 
     def to_excel(self, s3=False):
         raise NotImplementedError
