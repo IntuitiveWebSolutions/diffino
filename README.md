@@ -64,6 +64,12 @@ You can define the columns to be used for checking the diffs:
 diffino before_dataset.csv after_dataset.csv --cols id name
 ```
 
+#### Compare two CSV files in an S3 bucket using pandas mode
+
+```
+diffino s3://bucket/before_dataset.csv s3://bucket/after_dataset.csv --mode pandas
+```
+
 ### Output diff results to file
 
 Diffino will try it's best to guess your output storage mechanism, for that you need to include `s3://` in the input argument or use the `.csv`, `.xls` and `.xlsx extensions`.
