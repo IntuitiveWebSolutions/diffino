@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -13,7 +13,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "pandas==0.19.2",
-        "boto3==1.9.151"
+        "boto3==1.7.3"
     ],
     entry_points={'console_scripts': ['diffino = diffino.cli:main']},
     author="BriteCore",
